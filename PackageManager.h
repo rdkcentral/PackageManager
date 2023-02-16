@@ -28,7 +28,7 @@ namespace Plugin {
     class PackageManager : public PluginHost::IPlugin, public PluginHost::JSONRPC {
 
     private:
-        class Notification : public RPC::IRemoteConnection::INotification {
+        class Notification : public RPC::IRemoteConnection::INotification, public Exchange::IPackageManager::INotification {
         public:
             Notification(const Notification&) = delete;
             Notification& operator=(const Notification&) = delete;
@@ -36,7 +36,9 @@ namespace Plugin {
             Notification& operator=(Notification&&) = delete;
 
             explicit Notification(PackageManager* parent)
-                : _parent(*parent)
+                : RPC::IRemoteConnection::INotification()
+                , Exchange::IPackageManager::INotification()
+                , _parent(*parent)
             {
                 ASSERT(parent != nullptr);
             }
@@ -50,8 +52,15 @@ namespace Plugin {
                 _parent.Deactivated(connection);
             }
 
+            void OperationStatus(const string& handle, const string& operation, const string& type, const string& id,
+                                         const string& version, const string& status, const string& details) override {
+                _parent.OperationStatus(handle, operation, type, id, version, status, details);
+            }
+
+
             BEGIN_INTERFACE_MAP(Notification)
             INTERFACE_ENTRY(RPC::IRemoteConnection::INotification)
+            INTERFACE_ENTRY(Exchange::IPackageManager::INotification)
             END_INTERFACE_MAP
 
         private:
@@ -89,6 +98,7 @@ namespace Plugin {
     private:
 
         void Deactivated(RPC::IRemoteConnection* connection);
+        void OperationStatus(const string& handle, const string& operation, const string& type, const string& id, const string& version, const string& status, const string& details);
 
     private:
         uint32_t _connectionId;

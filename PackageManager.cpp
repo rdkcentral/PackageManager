@@ -19,6 +19,8 @@
 
 #include "PackageManager.h"
 
+#include <interfaces/IConfiguration.h>
+
 namespace WPEFramework {
 namespace Plugin {
 
@@ -53,6 +55,14 @@ namespace Plugin {
         _packageManager = service->Root<Exchange::IPackageManager>(_connectionId, 2000, _T("PackageManagerImplementation"));
         if (_packageManager != nullptr) {
             Exchange::JPackageManager::Register(*this, _packageManager);
+            _packageManager->Register(&_notification); 
+
+            Exchange::IConfiguration* config = _packageManager->QueryInterface<Exchange::IConfiguration>();
+            if (config != nullptr) {
+                config->Configure(service);
+                config->Release();
+            }
+
         } else {
             message = _T("PackageManager could not be instantiated. Could not acquire PackageManager interface");
         }
@@ -69,6 +79,7 @@ namespace Plugin {
             _service->Unregister(&_notification);
 
             if (_packageManager != nullptr) {
+                _packageManager->Unregister(&_notification); 
                 Exchange::JPackageManager::Unregister(*this);
 
                 // Stop processing:
@@ -114,6 +125,10 @@ namespace Plugin {
 
             Core::IWorkerPool::Instance().Submit(PluginHost::IShell::Job::Create(_service, PluginHost::IShell::DEACTIVATED, PluginHost::IShell::FAILURE));
         }
+    }
+
+    void PackageManager::OperationStatus(const string& handle, const string& operation, const string& type, const string& id, const string& version, const string& status, const string& details) {
+        Exchange::JPackageManager::Event::OperationStatus(*this, handle, operation, type, id, version, status, details);
     }
 
 } // namespace Plugin
