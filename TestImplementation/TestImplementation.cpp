@@ -81,17 +81,10 @@ public:
             return Core::ERROR_NONE;
         }
 
-    uint32_t GetStorageDetailsApps(const string& type,
+    uint32_t GetStorageDetails(const string& type,
         const string& id,
         const string& version,
-        StorageDetails& result /* @out */) override {
-            return Core::ERROR_NONE;
-        }
-
-    uint32_t GetStorageDetailsPersistent(const string& type,
-        const string& id,
-        const string& version,
-        StorageDetails& result /* @out */) override {
+        IPackageManager::StorageInfo& storageinfo /* @out */) const override {
             return Core::ERROR_NONE;
         }
 
@@ -115,7 +108,7 @@ public:
         const string& version,
         MetadataPayload& metadata /* @out */,
         IPackageManager::IKeyValueIterator*& resources /* @out */,
-        IPackageManager::IKeyValueIterator*& auxMetadata /* @out */) override {
+        IPackageManager::IKeyValueIterator*& auxMetadata /* @out */) const override {
             return Core::ERROR_NONE;
         }
 
@@ -123,7 +116,7 @@ public:
         return Core::ERROR_NONE;
     }
 
-    uint32_t GetProgress(const string& handle, uint32_t& progress /* @out */) override {
+    uint32_t GetProgress(const string& handle, uint32_t& progress /* @out */) const override {
         return Core::ERROR_NONE;
     }
 

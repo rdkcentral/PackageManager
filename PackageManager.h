@@ -75,6 +75,7 @@ namespace Plugin {
 
         PackageManager()
             : _connectionId(0)
+            , _packageManager(nullptr)
             , _notification(this)
             , _service(nullptr)
         {
