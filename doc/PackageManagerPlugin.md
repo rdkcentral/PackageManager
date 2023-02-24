@@ -100,8 +100,7 @@ PackageManager interface methods:
 | [uninstall](#method.uninstall) | Uninstall the application |
 | [download](#method.download) | Download arbitrary application's resource file |
 | [reset](#method.reset) | Delete persistent data stored locally |
-| [getstoragedetailsapps](#method.getstoragedetailsapps) | Information on the storage usage |
-| [getstoragedetailspersistent](#method.getstoragedetailspersistent) | Information on the storage usage |
+| [getstoragedetails](#method.getstoragedetails) | Information on the storage usage |
 | [setauxmetadata](#method.setauxmetadata) | Set an arbitrary metadata |
 | [clearauxmetadata](#method.clearauxmetadata) | Clears an arbitrary metadata |
 | [getmetadata](#method.getmetadata) | Get application metadata |
@@ -319,8 +318,8 @@ Delete persistent data stored locally.
 }
 ```
 
-<a name="method.getstoragedetailsapps"></a>
-## *getstoragedetailsapps [<sup>method</sup>](#head.Methods)*
+<a name="method.getstoragedetails"></a>
+## *getstoragedetails [<sup>method</sup>](#head.Methods)*
 
 Information on the storage usage.
 
@@ -337,10 +336,15 @@ Information on the storage usage.
 
 | Name | Type | Description |
 | :-------- | :-------- | :-------- |
-| result | object |  |
-| result.path | string |  |
-| result.quotakb | string |  |
-| result.usedkb | string |  |
+| storageinfo | object |  |
+| storageinfo.apps | object |  |
+| storageinfo.apps.path | string |  |
+| storageinfo.apps.quotakb | string |  |
+| storageinfo.apps.usedkb | string |  |
+| storageinfo.persistent | object |  |
+| storageinfo.persistent.path | string |  |
+| storageinfo.persistent.quotakb | string |  |
+| storageinfo.persistent.usedkb | string |  |
 
 ### Example
 
@@ -350,11 +354,10 @@ Information on the storage usage.
 {
   "jsonrpc": "2.0",
   "id": 42,
-  "method": "PackageManager.1.getstoragedetailsapps",
+  "method": "PackageManager.1.getstoragedetails",
   "params": {
     "type": "...",
     "id": "...",
-        
     "version": "..."
   }
 }
@@ -367,64 +370,17 @@ Information on the storage usage.
   "jsonrpc": "2.0",
   "id": 42,
   "result": {
-    "path": "...",
-    "quotakb": "...",
-    "usedkb": "..."
-  }
-}
-```
-
-<a name="method.getstoragedetailspersistent"></a>
-## *getstoragedetailspersistent [<sup>method</sup>](#head.Methods)*
-
-Information on the storage usage.
-
-### Parameters
-
-| Name | Type | Description |
-| :-------- | :-------- | :-------- |
-| params | object |  |
-| params.type | string |  |
-| params.id | string |  |
-| params.version | string |  |
-
-### Result
-
-| Name | Type | Description |
-| :-------- | :-------- | :-------- |
-| result | object |  |
-| result.path | string |  |
-| result.quotakb | string |  |
-| result.usedkb | string |  |
-
-### Example
-
-#### Request
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 42,
-  "method": "PackageManager.1.getstoragedetailspersistent",
-  "params": {
-    "type": "...",
-    "id": "...",
+    "apps": {
+      "path": "...",
+      "quotakb": "...",
+      "usedkb": "..."
+    },
         
-    "version": "..."
-  }
-}
-```
-
-#### Response
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 42,
-  "result": {
-    "path": "...",
-    "quotakb": "...",
-    "usedkb": "..."
+    "persistent": {
+      "path": "...",
+      "quotakb": "...",
+      "usedkb": "..."
+    }
   }
 }
 ```
