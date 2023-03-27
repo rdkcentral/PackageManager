@@ -54,6 +54,10 @@ if(PLUGIN_PACKAGEMANAGER_IMPLEMENTATION STREQUAL "Test")
         target_sources(${MODULE_NAME}
         PRIVATE
             TestImplementation/TestImplementation.cpp)
+elseif(PLUGIN_PACKAGEMANAGER_IMPLEMENTATION STREQUAL "Firebolt")
+        target_sources(${MODULE_NAME}
+        PRIVATE
+            FireboltImplementation/FireboltImplementation.cpp)
 else ()
     message(FATAL_ERROR "There is no valid implementation provided for the PackageManager")
 endif ()

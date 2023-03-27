@@ -46,6 +46,7 @@ namespace Plugin {
         ASSERT(_service == nullptr);
         ASSERT(_connectionId == 0);
         ASSERT(_packageManager == nullptr);
+        ASSERT(_pluginimpl == nullptr);
 
         _service = service;
         _service->AddRef();
@@ -57,10 +58,9 @@ namespace Plugin {
             Exchange::JPackageManager::Register(*this, _packageManager);
             _packageManager->Register(&_notification); 
 
-            Exchange::IConfiguration* config = _packageManager->QueryInterface<Exchange::IConfiguration>();
-            if (config != nullptr) {
-                config->Configure(service);
-                config->Release();
+            _pluginimpl = _packageManager->QueryInterface<PluginHost::IPlugin>();
+            if (_pluginimpl != nullptr) {
+                message = _pluginimpl->Initialize(service);
             }
 
         } else {
@@ -81,6 +81,12 @@ namespace Plugin {
             if (_packageManager != nullptr) {
                 _packageManager->Unregister(&_notification); 
                 Exchange::JPackageManager::Unregister(*this);
+
+                if (_pluginimpl != nullptr) {
+                    _pluginimpl->Deinitialize(service);
+                    _pluginimpl->Release();
+                    _pluginimpl = nullptr;
+                }
 
                 // Stop processing:
                 RPC::IRemoteConnection* connection = service->RemoteConnection(_connectionId);
@@ -111,8 +117,12 @@ namespace Plugin {
 
     string PackageManager::Information() const
     {
-        // No additional info to report.
-        return (string());
+        string result;
+        // not sure if we now would need locking, would be a pity, perhaps this will not be called during init and deinit? Let's investigate
+        if( _pluginimpl != nullptr ) {
+            result = _pluginimpl->Information();
+        }
+        return result;
     }
 
     void PackageManager::Deactivated(RPC::IRemoteConnection* connection)

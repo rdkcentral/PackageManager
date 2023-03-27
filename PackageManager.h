@@ -74,10 +74,13 @@ namespace Plugin {
         PackageManager& operator=(PackageManager&&) = delete;
 
         PackageManager()
-            : _connectionId(0)
+            : PluginHost::IPlugin()
+            , PluginHost::JSONRPC()
+            , _connectionId(0)
             , _packageManager(nullptr)
             , _notification(this)
             , _service(nullptr)
+            , _pluginimpl(nullptr)
         {
         }
 
@@ -106,6 +109,7 @@ namespace Plugin {
         Exchange::IPackageManager* _packageManager;
         Core::Sink<Notification> _notification;
         PluginHost::IShell* _service;
+        PluginHost::IPlugin* _pluginimpl;
     };
 
 } // namespace Plugin

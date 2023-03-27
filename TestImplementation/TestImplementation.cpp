@@ -25,7 +25,7 @@
 namespace WPEFramework {
 namespace Plugin {
 
-class PackageManagerImplementation : public Exchange::IPackageManager, public Exchange::IConfiguration {
+class PackageManagerImplementation : public PluginHost::IPlugin, public Exchange::IPackageManager {
 
 public:
     PackageManagerImplementation(const PackageManagerImplementation&) = delete;
@@ -35,18 +35,31 @@ public:
     ~PackageManagerImplementation() override = default;
 
     PackageManagerImplementation()
-        : Exchange::IPackageManager()
+        : PluginHost::IPlugin()
+        , Exchange::IPackageManager()
         , _observers()
         , _adminLock()
     {
     }
 
     BEGIN_INTERFACE_MAP(PackageManagerImplementation)
+    INTERFACE_ENTRY(PluginHost::IPlugin)
     INTERFACE_ENTRY(Exchange::IPackageManager)
-    INTERFACE_ENTRY(Exchange::IConfiguration)
     END_INTERFACE_MAP
 
-    // PackageManager methods
+    // IPlugin implementation
+    const string Initialize(PluginHost::IShell*) override {
+        return string();
+    }
+
+    void Deinitialize(PluginHost::IShell*) override {
+    }
+
+    string Information() const override {
+        return _T("Test Packagemanager service");
+    }
+
+    // IPackageManager implementation
     uint32_t Install(const string& type,
         const string& id,
         const string& version,
@@ -126,9 +139,10 @@ public:
         ASSERT(std::find(_observers.begin(), _observers.end(), notification) == _observers.end());
 
         _observers.push_back(notification);
-        notification->AddRef();
 
         _adminLock.Unlock();
+
+        notification->AddRef();
 
         return (Core::ERROR_NONE);        
     }
@@ -141,11 +155,12 @@ public:
         ASSERT(index != _observers.end());
 
         if (index != _observers.end()) {
-            (*index)->Release();
             _observers.erase(index);
+            _adminLock.Unlock();
+            notification->Release();
+        } else {
+            _adminLock.Unlock();
         }
-
-        _adminLock.Unlock();
 
         return (Core::ERROR_NONE);        
     }
@@ -176,7 +191,6 @@ public:
             return Core::ERROR_NONE;
     }
 
-    /* @brief Unlock application. */
     uint32_t Unlock(const string& handle) override {
         return Core::ERROR_NONE;
     }
@@ -185,10 +199,6 @@ public:
             const string& id,
             const string& version,
             LockInfo& result /* @out */) const override  {
-        return Core::ERROR_NONE;
-    }
-
-    uint32_t Configure(PluginHost::IShell* framework) override {
         return Core::ERROR_NONE;
     }
 
