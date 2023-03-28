@@ -60,6 +60,9 @@ namespace Plugin {
 
             _pluginimpl = _packageManager->QueryInterface<PluginHost::IPlugin>();
             if (_pluginimpl != nullptr) {
+                _adminLock.Lock();
+                _info = _pluginimpl->Information();
+                _adminLock.Unlock();
                 message = _pluginimpl->Initialize(service);
             }
 
@@ -117,12 +120,8 @@ namespace Plugin {
 
     string PackageManager::Information() const
     {
-        string result;
-        // not sure if we now would need locking, would be a pity, perhaps this will not be called during init and deinit? Let's investigate
-        if( _pluginimpl != nullptr ) {
-            result = _pluginimpl->Information();
-        }
-        return result;
+        Core::SafeSyncType<Core::CriticalSection> _guard(_adminLock);
+        return _info;
     }
 
     void PackageManager::Deactivated(RPC::IRemoteConnection* connection)

@@ -56,7 +56,7 @@ public:
     }
 
     string Information() const override {
-        return _T("Test Packagemanager service");
+        return _T("{\"identifier\":\"Test PackageManager service\"}");
     }
 
     // IPackageManager implementation

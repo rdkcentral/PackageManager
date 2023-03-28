@@ -29,7 +29,7 @@ message("Setup ${MODULE_NAME} v${PROJECT_VERSION}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 set(PLUGIN_PACKAGEMANAGER_AUTOSTART "true" CACHE STRING "Automatically start PackageManager plugin")
-set(PLUGIN_PACKAGEMANAGER_MODE "Local" CACHE STRING "Controls if the plugin should run in its own process, in process or remote.")
+set(PLUGIN_PACKAGEMANAGER_MODE "Off" CACHE STRING "Controls if the plugin should run in its own process, in process or remote.")
 set(PLUGIN_PACKAGEMANAGER_IMPLEMENTATION "Test" CACHE STRING "Controls which implementation should be used for the PackageManager.")
 
 find_package(${NAMESPACE}Plugins REQUIRED)
@@ -58,6 +58,9 @@ elseif(PLUGIN_PACKAGEMANAGER_IMPLEMENTATION STREQUAL "Firebolt")
         target_sources(${MODULE_NAME}
         PRIVATE
             FireboltImplementation/FireboltImplementation.cpp)
+
+        add_subdirectory(FireboltImplementation/ExampleClient)
+
 else ()
     message(FATAL_ERROR "There is no valid implementation provided for the PackageManager")
 endif ()

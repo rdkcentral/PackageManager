@@ -25,7 +25,7 @@
 namespace WPEFramework {
 namespace Plugin {
 
-class PackageManagerImplementation : public PluginHost::IPlugin, public Exchange::IPackageManager, public Exchange::IPackageManagerBroker {
+class PackageManagerImplementation : public PluginHost::IPlugin, public Exchange::IPackageManager, public Exchange::IPackageManagerBroker, public Exchange::IPackageManagerCallback {
 
     private:
         class Notification : public PluginHost::IShell::ICOMLink::INotification {
@@ -69,6 +69,7 @@ public:
         : PluginHost::IPlugin()
         , Exchange::IPackageManager()
         , Exchange::IPackageManagerBroker()
+        , Exchange::IPackageManagerCallback()
         , _packagemanager(nullptr)
         , _observers()
         , _adminLock()
@@ -80,6 +81,7 @@ public:
     INTERFACE_ENTRY(PluginHost::IPlugin)
     INTERFACE_ENTRY(Exchange::IPackageManager)
     INTERFACE_ENTRY(Exchange::IPackageManagerBroker)
+    INTERFACE_ENTRY(Exchange::IPackageManagerCallback)
     END_INTERFACE_MAP
 
     // IPlugin implementation
@@ -96,7 +98,7 @@ public:
     }
 
     string Information() const override {
-        return _T("Firebolt Packagemanager service");
+        return _T("{\"identifier\":\"Firebolt PackageManager service\"}");
     }
 
     // IPackageManager implementation
@@ -108,6 +110,7 @@ public:
         const string& appName,
         const string& category,
         string& handle ) override {
+            TRACE(Trace::Information, (_T("PackageManager Install call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -121,6 +124,7 @@ public:
         const string& version,
         const string& uninstallType,
         string& handle /* @out */) override {
+            TRACE(Trace::Information, (_T("PackageManager Uninstall call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -135,6 +139,7 @@ public:
         const string& resKey,
         const string& url,
         string& handle /* @out */) override {
+            TRACE(Trace::Information, (_T("PackageManager Download call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -147,6 +152,7 @@ public:
         const string& id,
         const string& version,
         const string& resetType) override {
+            TRACE(Trace::Information, (_T("PackageManager Reset call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -159,6 +165,7 @@ public:
         const string& id,
         const string& version,
         IPackageManager::StorageInfo& storageinfo /* @out */) const override {
+            TRACE(Trace::Information, (_T("PackageManager GetStorageDetails call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -172,6 +179,7 @@ public:
         const string& version,
         const string& key,
         const string& value) override {
+            TRACE(Trace::Information, (_T("PackageManager SetAuxMetadata call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -184,6 +192,7 @@ public:
         const string& id,
         const string& version,
         const string& key) override {
+            TRACE(Trace::Information, (_T("PackageManager ClearAuxMetadata call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -198,6 +207,7 @@ public:
         MetadataPayload& metadata /* @out */,
         IPackageManager::IKeyValueIterator*& resources /* @out */,
         IPackageManager::IKeyValueIterator*& auxMetadata /* @out */) const override {
+            TRACE(Trace::Information, (_T("PackageManager GetMetadata call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -207,6 +217,7 @@ public:
         }
 
     uint32_t Cancel(const string& handle) override {
+            TRACE(Trace::Information, (_T("PackageManager Cancel call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -216,6 +227,7 @@ public:
     }
 
     uint32_t GetProgress(const string& handle, uint32_t& progress /* @out */) const override {
+            TRACE(Trace::Information, (_T("PackageManager GetProgress call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -261,6 +273,7 @@ public:
         const string& id,
         string& type /* @out */,
         IPackageManager::IAppVersionIterator*& versions /* @out */) const override {
+            TRACE(Trace::Information, (_T("PackageManager GetAppData call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -276,6 +289,7 @@ public:
         const string& appName,
         const string& category,
         IPackageManager::IStringIterator*& installedIds /* @out */) const override {
+            TRACE(Trace::Information, (_T("PackageManager GetList call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -290,6 +304,7 @@ public:
         const string& reason,
         const string& owner,
         string& handle /* @out */) override {
+            TRACE(Trace::Information, (_T("PackageManager Lock call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -299,6 +314,7 @@ public:
     }
 
     uint32_t Unlock(const string& handle) override {
+            TRACE(Trace::Information, (_T("PackageManager Unlock call")));
             Core::ProxyType<Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -311,6 +327,7 @@ public:
         const string& id,
         const string& version,
         LockInfo& info /* @out */) const override  {
+            TRACE(Trace::Information, (_T("PackageManager GetLockInfo call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
             if(manager.IsValid() == true) {
@@ -322,6 +339,8 @@ public:
     // IPackageManagerBroker implementation
 
     uint32_t Offer(IPackageManager* packagemanager) override {
+        TRACE(Trace::Information, (_T("PackageManager implementation offered [%p]"), packagemanager));
+
         ASSERT(_packagemanager == nullptr);
         ASSERT(packagemanager != nullptr);
 
@@ -339,6 +358,8 @@ public:
     }
 
     uint32_t Revoke(const IPackageManager* packagemanager) override {
+        TRACE(Trace::Information, (_T("PackageManager implementation revoked [%p]"), packagemanager));
+
         ASSERT(_packagemanager != nullptr);
         ASSERT(packagemanager != nullptr);
 
@@ -357,12 +378,15 @@ public:
         return result;
     }
 
+    // IPackageManager Callback implementation
+
     void OperationStatusUpdate(const string& handle, const string& operation, const string& type, const string& id, const string& version, const string& status, const string& details) override {
         OperationStatusNotification(handle, operation, type, id, version, status, details);
     }
 
 private:
     void OperationStatusNotification(const string& handle, const string& operation, const string& type, const string& id, const string& version, const string& status, const string& details) {
+        TRACE(Trace::Information, (_T("PackageManager status notification triggered")));
         _adminLock.Lock();
 
         for (auto const& index : _observers) {
@@ -395,6 +419,7 @@ private:
     void Dangling(const Core::IUnknown* source, const uint32_t interfaceId)  {
         _adminLock.Lock();
         if( (interfaceId == Exchange::IPackageManager::ID) && (source == _packagemanager) ) {
+            TRACE(Trace::Information, (_T("PackageManager dangling pointer cleanup")));
             _packagemanager->Release();
             _packagemanager = nullptr;
         }

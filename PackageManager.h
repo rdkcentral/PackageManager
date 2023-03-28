@@ -81,6 +81,8 @@ namespace Plugin {
             , _notification(this)
             , _service(nullptr)
             , _pluginimpl(nullptr)
+            , _info()
+            , _adminLock()
         {
         }
 
@@ -110,6 +112,8 @@ namespace Plugin {
         Core::Sink<Notification> _notification;
         PluginHost::IShell* _service;
         PluginHost::IPlugin* _pluginimpl;
+        string _info;
+        mutable Core::CriticalSection _adminLock;    
     };
 
 } // namespace Plugin
