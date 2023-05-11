@@ -20,7 +20,6 @@
 #include "../Module.h"
 
 #include <interfaces/IPackageManager.h>
-#include <interfaces/IConfiguration.h>
 
 namespace WPEFramework {
 namespace Plugin {
@@ -410,7 +409,7 @@ private:
         Core::ProxyType<const Exchange::IPackageManager> packagemanager;
         _adminLock.Lock();
         if(_packagemanager != nullptr) {
-            packagemanager = Core::ProxyType<Exchange::IPackageManager>(*_packagemanager, *_packagemanager);
+            packagemanager = Core::ProxyType<const Exchange::IPackageManager>(*_packagemanager, *_packagemanager);
         }
         _adminLock.Unlock();
         return packagemanager;
