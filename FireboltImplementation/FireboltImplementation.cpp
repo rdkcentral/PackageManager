@@ -20,43 +20,11 @@
 #include "../Module.h"
 
 #include <interfaces/IPackageManager.h>
-#include <interfaces/IConfiguration.h>
 
 namespace WPEFramework {
 namespace Plugin {
 
 class PackageManagerImplementation : public PluginHost::IPlugin, public Exchange::IPackageManager, public Exchange::IPackageManagerBroker, public Exchange::IPackageManagerCallback {
-
-    private:
-        class Notification : public PluginHost::IShell::ICOMLink::INotification {
-        public:
-            Notification(const Notification&) = delete;
-            Notification& operator=(const Notification&) = delete;
-            Notification(Notification&&) = delete;
-            Notification& operator=(Notification&&) = delete;
-
-            explicit Notification(PackageManagerImplementation* parent)
-                : PluginHost::IShell::ICOMLink::INotification()
-                , _parent(*parent)
-            {
-                ASSERT(parent != nullptr);
-            }
-            ~Notification() override = default;
-
-            void Dangling(const Core::IUnknown* source, const uint32_t interfaceId) override {
-                _parent.Dangling(source, interfaceId);
-            }
-            void Revoked(const Core::IUnknown*, const uint32_t) override {
-
-            }
-
-            BEGIN_INTERFACE_MAP(Notification)
-            INTERFACE_ENTRY(PluginHost::IShell::ICOMLink::INotification)
-            END_INTERFACE_MAP
-
-        private:
-            PackageManagerImplementation& _parent;
-        };
 
 public:
     PackageManagerImplementation(const PackageManagerImplementation&) = delete;
@@ -73,7 +41,6 @@ public:
         , _packagemanager(nullptr)
         , _observers()
         , _adminLock()
-        , _notification(this)
     {
     }
 
@@ -88,13 +55,10 @@ public:
     const string Initialize(PluginHost::IShell* service) override {
         ASSERT(service != nullptr);
 
-        service->Register(&_notification);
-
         return string();
     }
 
     void Deinitialize(PluginHost::IShell* service) override {
-        service->Unregister(&_notification);
     }
 
     string Information() const override {
@@ -400,7 +364,7 @@ private:
         Core::ProxyType<Exchange::IPackageManager> packagemanager;
         _adminLock.Lock();
         if(_packagemanager != nullptr) {
-            packagemanager = Core::ProxyType<Exchange::IPackageManager>(*_packagemanager, *_packagemanager);
+            packagemanager = Core::ProxyType<Exchange::IPackageManager>(_packagemanager, _packagemanager);
         }
         _adminLock.Unlock();
         return packagemanager;
@@ -410,28 +374,16 @@ private:
         Core::ProxyType<const Exchange::IPackageManager> packagemanager;
         _adminLock.Lock();
         if(_packagemanager != nullptr) {
-            packagemanager = Core::ProxyType<Exchange::IPackageManager>(*_packagemanager, *_packagemanager);
+            packagemanager = Core::ProxyType<const Exchange::IPackageManager>(_packagemanager, _packagemanager);
         }
         _adminLock.Unlock();
         return packagemanager;
     }
 
-    void Dangling(const Core::IUnknown* source, const uint32_t interfaceId)  {
-        _adminLock.Lock();
-        if( (interfaceId == Exchange::IPackageManager::ID) && (source == _packagemanager) ) {
-            TRACE(Trace::Information, (_T("PackageManager dangling pointer cleanup")));
-            _packagemanager->Release();
-            _packagemanager = nullptr;
-        }
-        _adminLock.Unlock();
-    }
-
-
 private:
     Exchange::IPackageManager* _packagemanager;
     std::list<Exchange::IPackageManager::INotification*> _observers;
     mutable Core::CriticalSection _adminLock;    
-    Core::Sink<Notification> _notification;
 };
 
 SERVICE_REGISTRATION(PackageManagerImplementation, 1, 0);

@@ -19,8 +19,6 @@
 
 #include "PackageManager.h"
 
-#include <interfaces/IConfiguration.h>
-
 namespace WPEFramework {
 namespace Plugin {
 
