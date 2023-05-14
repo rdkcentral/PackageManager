@@ -179,7 +179,10 @@ private:
 
         Notification(const string& callsign, PackageManagerClient& client) 
         : _callsign(callsign)
-        , _client(client) {}
+        , _client(client)
+        , _registering(false){
+            
+        }
         ~Notification() override = default;
 
         void Registering(const bool registering) {
