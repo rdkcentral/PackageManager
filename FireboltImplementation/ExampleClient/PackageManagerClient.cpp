@@ -26,7 +26,6 @@
 #include <iostream>
 #include <core/core.h>
 #include <com/com.h>
-#include <plugins/Types.h>
 #include <interfaces/IPackageManager.h>
 #include <iostream>
 
@@ -166,33 +165,108 @@ public:
 
 };
 
-class PackageManagerClient : public Thunder::RPC::SmartInterfaceType<Thunder::Exchange::IPackageManager> {
+class PackageManagerClient  {
 private:
-    using BaseClass = Thunder::RPC::SmartInterfaceType<Thunder::Exchange::IPackageManager>;
+    using EngineType = RPC::InvokeServerType<1, 0, 8>;
+
+private:
+    class Notification : public PluginHost::IPlugin::INotification {
+    public:
+        Notification(const Notification&) = delete;
+        Notification& operator=(const Notification&) = delete;
+        Notification(Notification&&) = delete;
+        Notification& operator=(Notification&&) = delete;
+
+        Notification(const string& callsign, PackageManagerClient& client) 
+        : _callsign(callsign)
+        , _client(client) {}
+        ~Notification() override = default;
+
+        void Registering(const bool registering) {
+            _registering = registering;
+        };
+
+    private:
+        void StateChange(PluginHost::IShell* plugin) override
+        {
+            if(_registering == false) {
+                ASSERT(plugin != nullptr);
+                if(plugin->Callsign() == _callsign) {
+                    printf("StateChange PackageManager\n");
+                    if(plugin->State() == PluginHost::IShell::ACTIVATED) {
+                        printf("StateChange Activated for PackageManager\n");
+                        _client.Operational(true);
+                    } else if(plugin->State() == PluginHost::IShell::DEACTIVATED) {
+                        printf("StateChange Deactivated for PackageManager\n");
+                        _client.Operational(false);
+                    }
+                }
+            }
+        }
+
+        BEGIN_INTERFACE_MAP(Catalog)
+        INTERFACE_ENTRY(PluginHost::IPlugin::INotification)
+        END_INTERFACE_MAP
+
+    private:
+        const string _callsign;
+        PackageManagerClient& _client;
+        std::atomic<bool> _registering;
+    };
+
 public:
     PackageManagerClient(const uint32_t waitTime, const string& callsign)
-        : BaseClass()
-        , _adminLock()
+        : _adminLock()
         , _broker(nullptr)
         , _callback(nullptr)
-        , _packagemanagerimplementation(Core::Service<PackageManagerImplementation>::Create<Thunder::Exchange::IPackageManager>()) {
-        uint32_t result = BaseClass::Open(waitTime, BaseClass::Connector(), callsign);
-        printf("Opening PackageManager: %u\n", result);
+        , _packmanChannel(nullptr)
+        , _packagemanagerimplementation(Core::Service<PackageManagerImplementation>::Create<Thunder::Exchange::IPackageManager>())
+        , _engine()
+        , _comChannel()
+        , _systemengine(Core::ProxyType<EngineType>::Create())
+        , _systemChannel(Core::ProxyType<RPC::CommunicatorClient>::Create(Connector(),Core::ProxyType<Core::IIPCServer>(_systemengine)))
+        , _systeminterface(nullptr)
+        , _notification(callsign, *this)
+        , _callsign(callsign) {
+
+            ASSERT(_systemengine != nullptr);
+            ASSERT(_systemChannel != nullptr);
+            _systemengine->Announcements(_systemChannel->Announcement());
+
+            _systeminterface = _systemChannel->Open<PluginHost::IShell>(string());
+            if(_systeminterface != nullptr) {
+                _notification.Registering(true);
+                _systeminterface->Register(&_notification); 
+                printf("Registered for Plugin Notifications\n");
+                _notification.Registering(false);
+                // now let's start channel, we cannot use the initial notification so we assume it is running... (all chances for race conditions here but best we can do)
+                Operational(true);
+            } else {
+                printf("Could not get IShell!\n");
+            }
     }
 
-    ~PackageManagerClient() override {
-        _adminLock.Lock();
-            if(_broker != nullptr) {
-                _broker->Revoke(_packagemanagerimplementation);
-            }
+    ~PackageManagerClient() {
+        // first unregister for the notifications
+        if(_systeminterface != nullptr) {
+            _systeminterface->Unregister(&_notification); 
+            _systeminterface->Release();
+            _systeminterface = nullptr;
+        }
+
+        if(_broker != nullptr) {
+            _broker->Revoke(_packagemanagerimplementation);
             _broker->Release();
             _broker = nullptr;
-            if(_callback != nullptr) {
-                _callback->Release();
-                _callback = nullptr;
-            }
-        _adminLock.Unlock();
-        BaseClass::Close(Thunder::Core::infinite);
+        }
+        if(_callback != nullptr) {
+            _callback->Release();
+            _callback = nullptr;
+        }
+        if(_packmanChannel != nullptr) {
+            _packmanChannel->Release();
+            _packmanChannel = nullptr;
+        }
         _packagemanagerimplementation->Release();
     }
 
@@ -201,7 +275,7 @@ public:
 
         _adminLock.Lock();
         if(_callback != nullptr) {
-            callback = Core::ProxyType<Exchange::IPackageManagerCallback>(*_callback,*_callback);
+            callback = Core::ProxyType<Exchange::IPackageManagerCallback>(_callback,_callback);
         }
         _adminLock.Unlock();
 
@@ -213,39 +287,38 @@ public:
     }
 
 private:
-    void Operational(const bool upAndRunning) override {
+    void Operational(const bool upAndRunning) {
         printf("Operational state of PackageManager: %s\n", upAndRunning ? _T("true") : _T("false"));
 
         if(upAndRunning == true) {
-            Exchange::IPackageManager* packman = BaseClass::Interface();
-            if(packman != nullptr) {
-                ASSERT(_broker == nullptr);
-                ASSERT(_callback == nullptr);
-                _adminLock.Lock();
-                _broker = packman->QueryInterface<Exchange::IPackageManagerBroker>();
+            _adminLock.Lock();
+            printf("Staring Package manager communication channel\n");
+            _engine = Core::ProxyType<EngineType>::Create();
+            _comChannel = Core::ProxyType<RPC::CommunicatorClient>::Create(Connector(),Core::ProxyType<Core::IIPCServer>(_engine));
+            _engine->Announcements(_comChannel->Announcement());
+
+            _packmanChannel = _comChannel->Open<Exchange::IPackageManager>(_callsign);
+            if(_packmanChannel != nullptr) {
+                printf("Opening PackageManager succeeded\n");
+                _broker = _packmanChannel->QueryInterface<Exchange::IPackageManagerBroker>();
                 if(_broker != nullptr) {
                     printf("Got broker!\n");
-                    // we still need lock here as it could be in the destructor
                     _broker->Offer(_packagemanagerimplementation);
-                    _callback = packman->QueryInterface<Exchange::IPackageManagerCallback>();
-                    if(_callback != nullptr) {
-                        _adminLock.Unlock();
-                    } else {
-                        _adminLock.Unlock();
+                    _callback = _packmanChannel->QueryInterface<Exchange::IPackageManagerCallback>();
+                    if(_callback == nullptr) {
                         printf("Could not get callback!\n");
                     }
                 } else {
-                    _adminLock.Unlock();
                     printf("Could not get broker!\n");
                 }
-                packman->Release();
             } else {
-                printf("Could not get packagemanager!\n");
+                printf("Opening PackageManager failed\n");
             }
+            _adminLock.Unlock();
         } else {
-            // _broker and _callback could already be nullptr when triggered by the channel close in the destructor
             _adminLock.Lock();
             if(_broker != nullptr) {
+                // revocing useless as plugin is not running
                 _broker->Release();
                 _broker = nullptr;
             }
@@ -253,15 +326,47 @@ private:
                 _callback->Release();
                 _callback = nullptr;
             }
+            if(_packmanChannel != nullptr) {
+                _packmanChannel->Release();
+                _packmanChannel = nullptr;
+            }
+
+            _comChannel.Release();
+            _engine.Release();
+
             _adminLock.Unlock();
         }
+    }
+
+    static Core::NodeId Connector() {
+        const TCHAR* comPath = ::getenv(_T("COMMUNICATOR_PATH"));
+
+        if (comPath == nullptr) {
+#ifdef __WINDOWS__
+            comPath = _T("127.0.0.1:62000");
+#else
+            comPath = _T("/tmp/communicator");
+#endif
+        }
+
+        return Core::NodeId(comPath);
+
     }
 
 private:
     mutable Core::CriticalSection _adminLock;    
     Exchange::IPackageManagerBroker* _broker;
     Exchange::IPackageManagerCallback* _callback;
+    Exchange::IPackageManager* _packmanChannel;
     Thunder::Exchange::IPackageManager* _packagemanagerimplementation;
+    Core::ProxyType<EngineType> _engine;
+    Core::ProxyType<RPC::CommunicatorClient> _comChannel;
+    Core::ProxyType<EngineType> _systemengine;
+    Core::ProxyType<RPC::CommunicatorClient> _systemChannel;
+    PluginHost::IShell* _systeminterface;
+    Core::Sink<Notification> _notification;
+    const string _callsign;
+
 };
 
 int main(int argc, char* argv[])
@@ -269,17 +374,15 @@ int main(int argc, char* argv[])
     {
         PackageManagerClient  packmanclient(3000, _T("PackageManager"));
         char keyPress;
-        uint32_t counter = 8;
+
+        printf("U to trigger event, Q to quit\n");
 
         // chip.PCD_Init();
         do {
             keyPress = toupper(getchar());
-            
+
+           
             switch (keyPress) {
-            case 'O': {
-                printf("Operations state issue: %s\n", packmanclient.IsOperational() ? _T("true") : _T("false"));
-                break;
-            }
             case 'U': {
                 packmanclient.TriggerOperationStatusUpdate();
                 break;
@@ -294,3 +397,7 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
+
+template void WPEFramework::Core::IPCMessageType<2u, WPEFramework::RPC::Data::Input, WPEFramework::RPC::Data::Output>::RawSerializedType<WPEFramework::RPC::Data::Input, 4u>::AddRef() const;
+template void WPEFramework::Core::IPCMessageType<2u, WPEFramework::RPC::Data::Input, WPEFramework::RPC::Data::Output>::RawSerializedType<WPEFramework::RPC::Data::Output, 5u>::AddRef() const;

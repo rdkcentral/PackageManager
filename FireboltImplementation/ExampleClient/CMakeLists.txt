@@ -15,21 +15,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-find_package(${NAMESPACE}COM REQUIRED)
+set(TARGET PackageManagerClient)
+
+find_package(WPEFramework)
+find_package(${NAMESPACE}Protocols REQUIRED)
 find_package(CompileSettingsDebug CONFIG REQUIRED)
 
-add_executable(PackageManagerClient PackageManagerClient.cpp)
+add_executable(${TARGET} PackageManagerClient.cpp)
 
-set_target_properties(PackageManagerClient PROPERTIES
+set_target_properties(${TARGET} PROPERTIES
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED YES
         )     
 
-target_link_libraries(PackageManagerClient 
-        PRIVATE
+target_link_libraries(${TARGET}
+PUBLIC
         ${NAMESPACE}Core::${NAMESPACE}Core
-        ${NAMESPACE}COM::${NAMESPACE}COM
         CompileSettingsDebug::CompileSettingsDebug
-    )
+)
+
+target_link_libraries(${TARGET}
+        PUBLIC
+          ${NAMESPACE}Protocols::${NAMESPACE}Protocols
+)
 
 install(TARGETS PackageManagerClient DESTINATION bin)
