@@ -18,6 +18,7 @@
 set(TARGET PackageManagerClient)
 
 find_package(WPEFramework)
+find_package(${NAMESPACE}Core REQUIRED)
 find_package(${NAMESPACE}Protocols REQUIRED)
 find_package(CompileSettingsDebug CONFIG REQUIRED)
 
