@@ -1,7 +1,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2020 Metrological
+# Copyright 2023 Comcast Cable Communications Management, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ find_package(${NAMESPACE}Core REQUIRED)
 find_package(${NAMESPACE}Protocols REQUIRED)
 find_package(CompileSettingsDebug CONFIG REQUIRED)
 
-add_executable(${TARGET} PackageManagerClient.cpp)
+add_executable(${TARGET} ExternalServiceExampleClient.cpp)
 
 set_target_properties(${TARGET} PROPERTIES
         CXX_STANDARD 11
