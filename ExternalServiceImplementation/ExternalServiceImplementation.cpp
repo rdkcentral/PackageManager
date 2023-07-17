@@ -97,7 +97,7 @@ public:
     }
 
     string Information() const override {
-        return _T("{\"identifier\":\"Firebolt PackageManager service\"}");
+        return _T("{\"identifier\":\"ExternalService PackageManager service\"}");
     }
 
     // IPackageManager implementation

@@ -1,4 +1,4 @@
-LoadLeases# If not stated otherwise in this file or this component's LICENSE file the
+# If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
 # Copyright 2020 Metrological
@@ -20,7 +20,7 @@ find_package(${NAMESPACE}COM REQUIRED)
 find_package(${NAMESPACE}Plugins REQUIRED)
 find_package(CompileSettingsDebug CONFIG REQUIRED)
 
-add_executable(PackageManagerClient PackageManagerClient.cpp)
+add_executable(PackageManagerClient ExternalServiceExampleClient.cpp)
 
 set_target_properties(PackageManagerClient PROPERTIES
         CXX_STANDARD 11
