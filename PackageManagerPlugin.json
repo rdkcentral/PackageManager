@@ -1,0 +1,14 @@
+{
+  "$schema": "plugin.schema.json",
+  "info": {
+    "title": "PackageManager Plugin",
+    "callsign": "PackageManager",
+    "locator": "libWPEFrameworkPackageManager.so",
+    "status": "production",
+    "description": "The Package Manager plugin allows installation of packages on the system from a remote repository.",
+    "version": "1.0"
+  },
+  "interface": {
+    "$cppref": "{cppinterfacedir}/IPackageManager.h"
+  }
+}

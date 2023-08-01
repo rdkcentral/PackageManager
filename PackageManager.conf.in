@@ -1,0 +1,8 @@
+autostart = "@PLUGIN_PACKAGEMANAGER_AUTOSTART@"
+
+configuration = JSON()
+
+root = JSON()
+root.add("mode", "@PLUGIN_PACKAGEMANAGER_MODE@")
+configuration.add("root", root)
+
