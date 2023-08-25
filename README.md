@@ -12,4 +12,8 @@ The PackageManager repository contains multiple implementations of the same [int
 The PackageManager is a [Thunder](https://github.com/rdkcentral/Thunder) plugin.
 Please refer to the [Thunder documentation](https://rdkcentral.github.io/Thunder/) for more information on Thunder.
 
+### Copyright and License
+
+The PackageManager is licensed under the Apache License, Version 2.0. See the LICENSE and NOTICE files in the top level directory for further details.
+
 
