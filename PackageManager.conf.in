@@ -1,3 +1,4 @@
+callsign = "org.rdk.PackageManager"
 autostart = "@PLUGIN_PACKAGEMANAGER_AUTOSTART@"
 
 configuration = JSON()
