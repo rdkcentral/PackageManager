@@ -58,6 +58,8 @@ public:
         return _T("{\"identifier\":\"Test PackageManager service\"}");
     }
 
+PUSH_WARNING(DISABLE_WARNING_UNUSED_PARAMETERS)
+
     // IPackageManager implementation
     uint32_t Install(const string& type,
         const string& id,
@@ -164,20 +166,13 @@ public:
         return (Core::ERROR_NONE);        
     }
 
-    uint32_t GetAppData(
-        const string& id,
-        string& type /* @out */,
-        IPackageManager::IAppVersionIterator*& versions /* @out */) const override {
-            return Core::ERROR_NONE;
-    }
-
     uint32_t GetList(
         const string& type,
         const string& id,
         const string& version,
         const string& appName,
         const string& category,
-        IPackageManager::IStringIterator*& installedIds /* @out */) const override {
+        IPackageKeyIterator*& installedIds /* @out */) const override {
             return Core::ERROR_NONE;
     }
 
@@ -200,6 +195,8 @@ public:
             LockInfo& result /* @out */) const override  {
         return Core::ERROR_NONE;
     }
+
+POP_WARNING()
 
 private:
     void OperationStatusNotification(const string& handle, const string& operation, const string& type, const string& id, const string& version, const string& status, const string& details) {

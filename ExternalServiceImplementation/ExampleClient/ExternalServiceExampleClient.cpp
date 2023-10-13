@@ -42,6 +42,8 @@ public:
         INTERFACE_ENTRY(Thunder::Exchange::IPackageManager)
     END_INTERFACE_MAP
 
+PUSH_WARNING(DISABLE_WARNING_UNUSED_PARAMETERS)
+
     // IPackageManager implementation
     uint32_t Install(const string& type,
         const string& id,
@@ -125,20 +127,13 @@ public:
         return Core::ERROR_BAD_REQUEST;
     }
 
-    uint32_t GetAppData(
-        const string& id,
-        string& type /* @out */,
-        IPackageManager::IAppVersionIterator*& versions /* @out */) const override {
-            return Core::ERROR_NONE;
-    }
-
     uint32_t GetList(
         const string& type,
         const string& id,
         const string& version,
         const string& appName,
         const string& category,
-        IPackageManager::IStringIterator*& installedIds /* @out */) const override {
+        IPackageKeyIterator*& installedIds /* @out */) const override {
             return Core::ERROR_NONE;
     }
 
@@ -162,7 +157,11 @@ public:
         return Core::ERROR_NONE;
     }
 
+POP_WARNING()
+
 };
+
+
 
 class PackageManagerClient : public Thunder::RPC::SmartInterfaceType<Thunder::Exchange::IPackageManager> {
 private:
@@ -262,12 +261,11 @@ private:
     Thunder::Exchange::IPackageManager* _packagemanagerimplementation;
 };
 
-int main(int argc, char* argv[])
+int main(int, char*)
 {
     {
         PackageManagerClient  packmanclient(3000, _T("PackageManager"));
         char keyPress;
-        uint32_t counter = 8;
 
         // chip.PCD_Init();
         do {
