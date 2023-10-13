@@ -164,20 +164,13 @@ public:
         return (Core::ERROR_NONE);        
     }
 
-    uint32_t GetAppData(
-        const string& id,
-        string& type /* @out */,
-        IPackageManager::IAppVersionIterator*& versions /* @out */) const override {
-            return Core::ERROR_NONE;
-    }
-
     uint32_t GetList(
         const string& type,
         const string& id,
         const string& version,
         const string& appName,
         const string& category,
-        IPackageManager::IStringIterator*& installedIds /* @out */) const override {
+        IPackageKeyIterator*& installedIds /* @out */) const override {
             return Core::ERROR_NONE;
     }
 

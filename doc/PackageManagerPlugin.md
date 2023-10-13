@@ -23,14 +23,12 @@ PackageManager plugin for Thunder framework.
 <a name="head.Scope"></a>
 ## Scope
 
-This document describes purpose and functionality of the PackageManager plugin. It includes detailed specification about its configuration,
-         methods provided and notifications sent.
+This document describes purpose and functionality of the PackageManager plugin. It includes detailed specification about its configuration, methods provided and notifications sent.
 
 <a name="head.Case_Sensitivity"></a>
 ## Case Sensitivity
 
-All identifiers of the interfaces described in this document are case-sensitive. Thus, unless stated otherwise, all keywords, entities, properties,
-         relations and actions should be treated as such.
+All identifiers of the interfaces described in this document are case-sensitive. Thus, unless stated otherwise, all keywords, entities, properties, relations and actions should be treated as such.
 
 <a name="head.Acronyms,_Abbreviations_and_Terms"></a>
 ## Acronyms, Abbreviations and Terms
@@ -48,8 +46,7 @@ The table below provides and overview of terms and abbreviations used in this do
 
 | Term | Description |
 | :-------- | :-------- |
-| <a name="term.callsign">callsign</a> | The name given to an instance of a plugin. One plugin can be instantiated multiple times,
-         but each instance the instance name, callsign, must be unique. |
+| <a name="term.callsign">callsign</a> | The name given to an instance of a plugin. One plugin can be instantiated multiple times, but each instance the instance name, callsign, must be unique. |
 
 <a name="head.References"></a>
 ## References
@@ -85,7 +82,7 @@ The table below lists configuration options of the plugin.
 
 This plugin implements the following interfaces:
 
-- Exchange::IPackageManager ([IPackageManager.h](https://github.com/rdkcentral/ThunderInterfaces/blob/master/interfaces/IPackageManager.h)) (version 1.0.0) (compliant format)
+- IPackageManager ([IPackageManager.h](https://github.com/rdkcentral/ThunderInterfaces/blob/master/interfaces/IPackageManager.h)) (version 1.0.0) (compliant format)
 
 <a name="head.Methods"></a>
 # Methods
@@ -106,7 +103,6 @@ PackageManager interface methods:
 | [getmetadata](#method.getmetadata) | Get application metadata |
 | [cancel](#method.cancel) | Cancel asynchronous request |
 | [getprogress](#method.getprogress) | Estimated progress of a request |
-| [getappdata](#method.getappdata) | retrieve installed data for an app |
 | [getlist](#method.getlist) | List installed applications |
 | [lock](#method.lock) | Lock the application |
 | [unlock](#method.unlock) | Unlock application |
@@ -148,7 +144,6 @@ Download the application bundle.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "url": "...",
     "appname": "...",
     "category": "..."
@@ -200,7 +195,6 @@ Uninstall the application.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "uninstalltype": "..."
   }
 }
@@ -251,7 +245,6 @@ Download arbitrary application's resource file.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "reskey": "...",
     "url": "..."
   }
@@ -302,7 +295,6 @@ Delete persistent data stored locally.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "resettype": "..."
   }
 }
@@ -375,7 +367,6 @@ Information on the storage usage.
       "quotakb": "...",
       "usedkb": "..."
     },
-        
     "persistent": {
       "path": "...",
       "quotakb": "...",
@@ -420,7 +411,6 @@ Set an arbitrary metadata.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "key": "...",
     "value": "..."
   }
@@ -471,7 +461,6 @@ Clears an arbitrary metadata.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "key": "..."
   }
 }
@@ -508,6 +497,7 @@ Get application metadata.
 | result | object |  |
 | result.metadata | object |  |
 | result.metadata.appname | string |  |
+| result.metadata.type | string |  |
 | result.metadata.category | string |  |
 | result.metadata.url | string |  |
 | result.resources | array |  |
@@ -545,10 +535,10 @@ Get application metadata.
   "result": {
     "metadata": {
       "appname": "...",
+      "type": "...",
       "category": "...",
       "url": "..."
     },
-        
     "resources": [
       {
         "key": "...",
@@ -558,7 +548,6 @@ Get application metadata.
     "auxmetadata": [
       {
         "key": "...",
-        
         "value": "..."
       }
     ]
@@ -652,67 +641,6 @@ Estimated progress of a request.
 }
 ```
 
-<a name="method.getappdata"></a>
-## *getappdata [<sup>method</sup>](#head.Methods)*
-
-retrieve installed data for an app.
-
-### Parameters
-
-| Name | Type | Description |
-| :-------- | :-------- | :-------- |
-| params | object |  |
-| params.id | string |  |
-
-### Result
-
-| Name | Type | Description |
-| :-------- | :-------- | :-------- |
-| result | object |  |
-| result.type | string |  |
-| result.versions | array |  |
-| result.versions[#] | object |  |
-| result.versions[#].version | string |  |
-| result.versions[#].appname | string |  |
-| result.versions[#].category | string |  |
-| result.versions[#].url | string |  |
-
-### Example
-
-#### Request
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 42,
-  "method": "PackageManager.1.getappdata",
-  "params": {
-    "id": "..."
-  }
-}
-```
-
-#### Response
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 42,
-  "result": {
-    "type": "...",
-    "versions": [
-      {
-        "version": "...",
-        "appname": "...",
-        
-        "category": "...",
-        "url": "..."
-      }
-    ]
-  }
-}
-```
-
 <a name="method.getlist"></a>
 ## *getlist [<sup>method</sup>](#head.Methods)*
 
@@ -734,7 +662,9 @@ List installed applications.
 | Name | Type | Description |
 | :-------- | :-------- | :-------- |
 | installedids | array |  |
-| installedids[#] | string |  |
+| installedids[#] | object |  |
+| installedids[#].id | string |  |
+| installedids[#].version | string |  |
 
 ### Example
 
@@ -749,7 +679,6 @@ List installed applications.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "appname": "...",
     "category": "..."
   }
@@ -763,7 +692,10 @@ List installed applications.
   "jsonrpc": "2.0",
   "id": 42,
   "result": [
-    "..."
+    {
+      "id": "...",
+      "version": "..."
+    }
   ]
 }
 ```
@@ -803,7 +735,6 @@ Lock the application. Preventing uninstallation.
     "type": "...",
     "id": "...",
     "version": "...",
-        
     "reason": "...",
     "owner": "..."
   }
@@ -956,7 +887,6 @@ Completion of asynchronous operation.
     "handle": "...",
     "operation": "...",
     "type": "...",
-        
     "id": "...",
     "version": "...",
     "status": "...",

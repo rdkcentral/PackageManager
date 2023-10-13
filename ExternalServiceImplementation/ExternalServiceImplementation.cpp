@@ -232,26 +232,13 @@ public:
         return (Core::ERROR_NONE);        
     }
 
-    uint32_t GetAppData(
-        const string& id,
-        string& type /* @out */,
-        IPackageManager::IAppVersionIterator*& versions /* @out */) const override {
-            TRACE(Trace::Information, (_T("PackageManager GetAppData call")));
-            Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
-            uint32_t result = Core::ERROR_UNAVAILABLE;
-            if(manager.IsValid() == true) {
-                result = manager->GetAppData(id, type, versions);
-            }
-            return result;
-    }
-
     uint32_t GetList(
         const string& type,
         const string& id,
         const string& version,
         const string& appName,
         const string& category,
-        IPackageManager::IStringIterator*& installedIds /* @out */) const override {
+        IPackageKeyIterator*& installedIds /* @out */) const override {
             TRACE(Trace::Information, (_T("PackageManager GetList call")));
             Core::ProxyType<const Exchange::IPackageManager> manager(PackageManager());
             uint32_t result = Core::ERROR_UNAVAILABLE;
