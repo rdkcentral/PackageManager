@@ -31,7 +31,7 @@ namespace Plugin {
             // Terminations
             {},
             // Controls
-            {}
+            { subsystem::INSTALLATION }
         );
     }
 
