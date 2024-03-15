@@ -72,6 +72,7 @@ public:
         , _observers()
         , _adminLock()
         , _notification(this)
+        , _service(nullptr)
     {
     }
 
@@ -85,14 +86,24 @@ public:
     // IPlugin implementation
     const string Initialize(PluginHost::IShell* service) override {
         ASSERT(service != nullptr);
+        ASSERT(_service == nullptr);
 
-        service->Register(&_notification);
+        _service = service;
+        _service->AddRef();
+
+        _service->Register(&_notification);
 
         return string();
     }
 
-    void Deinitialize(PluginHost::IShell* service) override {
-        service->Unregister(&_notification);
+    void Deinitialize(PluginHost::IShell* service VARIABLE_IS_NOT_USED) override {
+        ASSERT(service == _service);
+
+        _service->Unregister(&_notification);
+
+        _service->Release();
+        _service = nullptr;
+
     }
 
     string Information() const override {
@@ -328,6 +339,7 @@ public:
 
         ASSERT(_packagemanager == nullptr);
         ASSERT(packagemanager != nullptr);
+        ASSERT(_service != nullptr);
 
         _adminLock.Lock();
 
@@ -339,11 +351,32 @@ public:
 
         _adminLock.Unlock();
 
+        PluginHost::ISubSystem* subSystem = _service->SubSystems();
+        if (subSystem != nullptr) {
+            if (subSystem->IsActive(PluginHost::ISubSystem::INSTALLATION) == true) {
+                SYSLOG(Logging::Startup, (_T("subsystem INSTALLATION is not defined as External !!")));
+            }
+            else {
+                subSystem->Set(PluginHost::ISubSystem::INSTALLATION, nullptr);
+            }
+            subSystem->Release();
+        }
+
         return Core::ERROR_NONE;
     }
 
     uint32_t Revoke(const IPackageManager* packagemanager) override {
         TRACE(Trace::Information, (_T("PackageManager implementation revoked [%p]"), packagemanager));
+
+        ASSERT(_service != nullptr);
+
+        PluginHost::ISubSystem* subSystem = _service->SubSystems();
+        if (subSystem != nullptr) {
+            if (subSystem->IsActive(PluginHost::ISubSystem::INSTALLATION) == true) {
+                subSystem->Set(PluginHost::ISubSystem::NOT_INSTALLATION, nullptr);
+                subSystem->Release();
+            }
+        }
 
         ASSERT(_packagemanager != nullptr);
         ASSERT(packagemanager != nullptr);
@@ -360,6 +393,7 @@ public:
             _adminLock.Unlock();
             result = Core::ERROR_NOT_EXIST;
         }
+       
         return result;
     }
 
@@ -417,6 +451,7 @@ private:
     std::list<Exchange::IPackageManager::INotification*> _observers;
     mutable Core::CriticalSection _adminLock;    
     Core::Sink<Notification> _notification;
+    PluginHost::IShell* _service;
 };
 
 SERVICE_REGISTRATION(PackageManagerImplementation, 1, 0);

@@ -47,11 +47,30 @@ public:
     END_INTERFACE_MAP
 
     // IPlugin implementation
-    const string Initialize(PluginHost::IShell*) override {
+    const string Initialize(PluginHost::IShell* service) override {
+
+        PluginHost::ISubSystem* subSystem = service->SubSystems();
+        if (subSystem != nullptr) {
+            if (subSystem->IsActive(PluginHost::ISubSystem::INSTALLATION) == true) {
+                SYSLOG(Logging::Startup, (_T("subsystem INSTALLATION is not defined as External !!")));
+            }
+            else {
+                subSystem->Set(PluginHost::ISubSystem::INSTALLATION, nullptr);
+            }
+            subSystem->Release();
+        }
+
         return string();
     }
 
-    void Deinitialize(PluginHost::IShell*) override {
+    void Deinitialize(PluginHost::IShell* service) override {
+        PluginHost::ISubSystem* subSystem = service->SubSystems();
+        if (subSystem != nullptr) {
+            if (subSystem->IsActive(PluginHost::ISubSystem::INSTALLATION) == true) {
+                subSystem->Set(PluginHost::ISubSystem::NOT_INSTALLATION, nullptr);
+                subSystem->Release();
+            }
+        }
     }
 
     string Information() const override {
