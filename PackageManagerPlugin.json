@@ -3,7 +3,7 @@
   "info": {
     "title": "PackageManager Plugin",
     "callsign": "PackageManager",
-    "locator": "libWPEFrameworkPackageManager.so",
+    "locator": "libThunderPackageManager.so",
     "status": "production",
     "description": "The Package Manager plugin allows installation of packages on the system from a remote repository.",
     "version": "1.0"

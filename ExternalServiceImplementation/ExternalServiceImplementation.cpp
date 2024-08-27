@@ -20,7 +20,7 @@
 
 #include <interfaces/IPackageManager.h>
 
-namespace WPEFramework {
+namespace Thunder {
 namespace Plugin {
 
 class PackageManagerImplementation : public PluginHost::IPlugin, public Exchange::IPackageManager, public Exchange::IPackageManagerBroker, public Exchange::IPackageManagerCallback {

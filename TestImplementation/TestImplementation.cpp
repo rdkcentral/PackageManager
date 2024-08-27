@@ -21,7 +21,7 @@
 #include <interfaces/IPackageManager.h>
 #include <interfaces/IConfiguration.h>
 
-namespace WPEFramework {
+namespace Thunder {
 namespace Plugin {
 
 class PackageManagerImplementation : public PluginHost::IPlugin, public Exchange::IPackageManager {

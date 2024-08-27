@@ -30,8 +30,6 @@
 
 MODULE_NAME_DECLARATION(BUILD_REFERENCE);
 
-namespace Thunder = WPEFramework;
-
 using namespace Thunder;
 
 class PackageManagerImplementation : public Thunder::Exchange::IPackageManager {
@@ -264,7 +262,7 @@ private:
 int main(int, char*)
 {
     {
-        PackageManagerClient  packmanclient(3000, _T("PackageManager"));
+        PackageManagerClient  packmanclient(3000, _T("org.rdk.PackageManager"));
         char keyPress;
 
         // chip.PCD_Init();

@@ -21,7 +21,7 @@
 #include "Module.h"
 #include <interfaces/json/JPackageManager.h>
 
-namespace WPEFramework {
+namespace Thunder {
 namespace Plugin {
 
     class PackageManager : public PluginHost::IPlugin, public PluginHost::JSONRPC {
@@ -116,4 +116,4 @@ namespace Plugin {
     };
 
 } // namespace Plugin
-} // namespace WPEFramework
+} // namespace Thunder
